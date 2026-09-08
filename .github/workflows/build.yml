@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Real Android APK
 
 on:
   push:
@@ -17,23 +17,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Create Local Properties
-        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Generate Debug APK
+      - name: Build with Gradle
         run: |
-          # اگر فایل gradlew موجود باشد با آن بیلد می‌کنیم، وگرنه یک APK نمونه یا بیلد مستقیم می‌سازیم
-          if [ -f "./gradlew" ]; then
-            chmod +x gradlew
-            ./gradlew assembleDebug
-          else
-            echo "Gradle wrapper not found, simulating build for structure..."
-            mkdir -p app/build/outputs/apk/debug/
-            echo "Dummy APK content for Ganjine-ye Vazhe-ha" > app/build/outputs/apk/debug/app-debug.apk
+          # اگر فایل gradlew وجود ندارد، یک نمونه‌اش را می‌سازیم یا از gradle استفاده می‌کنیم
+          if [ ! -f "./gradlew" ]; then
+            gradle wrapper --gradle-version 8.0
           fi
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
-      - name: Upload APK Artifact
+      - name: Upload Real APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: foroshno-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: foroshno-real-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
